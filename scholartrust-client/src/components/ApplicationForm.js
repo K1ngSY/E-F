@@ -1,29 +1,54 @@
 import React, { useState } from 'react';
-import { TextField, Button } from '@mui/material';
-import { uploadToIPFS } from '../utils/ipfs';
+import { Button } from '@mui/material';
 
 export default function ApplicationForm({ contract, account }) {
-  const [name, setName] = useState('');
-  const [essay, setEssay] = useState('');
   const [file, setFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
 
   const handleSubmit = async () => {
-    const fileUrl = await uploadToIPFS(file);
-    const metadata = JSON.stringify({ name, essay, file: fileUrl });
-    const metadataHash = await uploadToIPFS(metadata);
+    if (!file) {
+      alert('Please select a file to upload.');
+      return;
+    }
 
-    await contract.methods.submitApplication(metadataHash).send({ from: account });
-    console.log('Simulated contract call with metadataHash:', metadataHash);
-    alert('Application submitted! (Simulated)');
-    // alert('Application submitted!');
+    try {
+      setUploading(true);
+
+      const formData = new FormData();
+      formData.append('application', file);
+
+      const response = await fetch('http://localhost:3001/pools/1/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('File upload failed');
+      }
+
+      const data = await response.json();
+      const fileUrl = data.fileUrl || '';
+
+      // Use a fixed metadata hash or handle accordingly
+      const metadataHash = "QmExampleMetadataHash";
+
+      await contract.methods.submitApplication(metadataHash).send({ from: account });
+
+      alert('Application submitted!');
+    } catch (error) {
+      alert('Error: ' + error.message);
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
     <div>
-      <TextField fullWidth label="Name" value={name} onChange={(e) => setName(e.target.value)} />
-      <TextField fullWidth multiline label="Essay" value={essay} onChange={(e) => setEssay(e.target.value)} />
       <input type="file" onChange={(e) => setFile(e.target.files[0])} />
-      <Button variant="contained" onClick={handleSubmit}>Submit Application</Button>
+      <Button variant="contained" onClick={handleSubmit} disabled={uploading}>
+        {uploading ? 'Uploading...' : 'Submit Application'}
+      </Button>
     </div>
   );
 }
+

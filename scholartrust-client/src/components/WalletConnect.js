@@ -5,9 +5,8 @@ import { Button } from '@mui/material';
 import MyContract from '../contracts/ScholarshipPool.json'; // replace with your ABI
 
 // ⚠️ Use one of the private keys from Hardhat node output
-const CONTRACT_ADDRESS = '0xBcd4042DE499D14e55001CcbB24a551F3b954096';
+const CONTRACT_ADDRESS = '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266';
 const PRIVATE_KEY = '0xf214f2b2cd398c806f84e317254e0f0b801d0643303237d97a22a48e01628897'; // deployed on localhost
-
 
 const WalletConnect = ({ onWalletConnected }) => {
   const [account, setAccount] = useState('');
