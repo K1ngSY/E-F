@@ -12,26 +12,32 @@ contract ScholarshipPool {
         mapping(address => bool) voted;
     }
 
+    // 每个池的基本信息
     mapping(uint256 => Scholarship) private pools;
     uint256 public poolCount;
 
+    // 新增：每个池对应的 IPFS CID 列表
+    mapping(uint256 => string[]) public records;
+
+    // 事件
     event PoolCreated(uint256 indexed poolId, string name, uint256 totalAmount);
     event Applied(uint256 indexed poolId, address applicant);
     event Voted(uint256 indexed poolId, address voter, bool support);
     event Disbursed(uint256 indexed poolId, address recipient, uint256 amount);
+    event RecordAdded(uint256 indexed poolId, string cid);
 
-    // 构造函数：接收初始资金并自动建池
+    /// @notice 部署时可支付初始资金，为池子 0 预置一个 empty pool
     constructor() payable {
         require(msg.value > 0, "Must fund scholarship pool");
         Scholarship storage sp = pools[poolCount];
-        sp.name = "";            // 默认名称，可后续扩展
-        sp.description = "";     // 默认描述
+        sp.name = "";
+        sp.description = "";
         sp.totalAmount = msg.value;
         poolCount++;
-        emit PoolCreated(0, sp.name, msg.value);
+        emit PoolCreated(0, "", msg.value);
     }
 
-    // Create additional scholarship pools on‑chain
+    /// @notice 创建新的奖学金池
     function createPool(string calldata name, string calldata desc) external payable {
         require(msg.value > 0, "Must fund scholarship pool");
         Scholarship storage sp = pools[poolCount];
@@ -42,7 +48,7 @@ contract ScholarshipPool {
         poolCount++;
     }
 
-    // Apply for a scholarship
+    /// @notice 申请该奖学金（同一地址只能申请一次）
     function applyForScholarship(uint256 poolId) external {
         Scholarship storage sp = pools[poolId];
         require(!sp.applied[msg.sender], "Already applied");
@@ -51,7 +57,7 @@ contract ScholarshipPool {
         emit Applied(poolId, msg.sender);
     }
 
-    // Vote on an applicant (support = true/false)
+    /// @notice 对申请者投票：support = true 表示支持
     function vote(uint256 poolId, bool support) external {
         Scholarship storage sp = pools[poolId];
         require(sp.applied[msg.sender], "Must apply first");
@@ -63,14 +69,20 @@ contract ScholarshipPool {
         emit Voted(poolId, msg.sender, support);
     }
 
-    // Disburse funds if majority supports
+    /// @notice 如果支持票数过半，则拨款给调用者
     function disburse(uint256 poolId) external {
         Scholarship storage sp = pools[poolId];
         require(sp.votesFor * 2 > sp.applicantCount, "Not enough support");
-        address payable recipient = payable(msg.sender);
         uint256 amount = sp.totalAmount;
         sp.totalAmount = 0;
+        address payable recipient = payable(msg.sender);
         recipient.transfer(amount);
         emit Disbursed(poolId, recipient, amount);
+    }
+
+    /// @notice 新增存证记录：在链上记录 IPFS 上存储的文件 CID
+    function addRecord(uint256 poolId, string calldata cid) external {
+        records[poolId].push(cid);
+        emit RecordAdded(poolId, cid);
     }
 }
