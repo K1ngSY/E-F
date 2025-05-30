@@ -1,25 +1,43 @@
-import React, { useState } from 'react';
+// src/components/WalletConnect.js
+import React, { useEffect, useState } from 'react';
 import Web3 from 'web3';
 import { Button } from '@mui/material';
+import MyContract from '../contracts/ScholarshipPool.json'; // replace with your ABI
 
-export default function WalletConnect({ onWalletConnected }) {
+// ⚠️ Use one of the private keys from Hardhat node output
+const PRIVATE_KEY = '0xYOUR_PRIVATE_KEY_HERE';
+const CONTRACT_ADDRESS = '0xYourContractAddressHere'; // deployed on localhost
+
+const WalletConnect = ({ onWalletConnected }) => {
   const [account, setAccount] = useState('');
+  const [web3, setWeb3] = useState(null);
 
-  const connectWallet = async () => {
-    if (window.ethereum) {
-      const web3 = new Web3(window.ethereum);
-      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-      setAccount(accounts[0]);
-      onWalletConnected(web3, accounts[0]);
-    } else {
-      alert('Please install MetaMask!');
-    }
-  };
+  useEffect(() => {
+    const connectWithoutMetaMask = async () => {
+      const web3Instance = new Web3('http://127.0.0.1:8545'); // Hardhat node
+      const acct = web3Instance.eth.accounts.privateKeyToAccount(PRIVATE_KEY);
+      web3Instance.eth.accounts.wallet.add(acct);
+      web3Instance.eth.defaultAccount = acct.address;
+
+      setAccount(acct.address);
+      setWeb3(web3Instance);
+
+      // Optional: pass to parent component
+      if (onWalletConnected) {
+        const contract = new web3Instance.eth.Contract(MyContract.abi, CONTRACT_ADDRESS);
+        onWalletConnected(web3Instance, acct.address, contract);
+      }
+    };
+
+    connectWithoutMetaMask();
+  }, [onWalletConnected]);
 
   return (
-    <Button variant="contained" onClick={connectWallet}>
-      {account ? `Connected: ${account.slice(0, 6)}...` : 'Connect Wallet'}
+    <Button variant="contained" disabled>
+      Connected: {account ? `${account.slice(0, 6)}...` : 'Loading...'}
     </Button>
   );
-}
+};
+
+export default WalletConnect;
 
