@@ -1,0 +1,41 @@
+{
+  "_format": "hh-sol-cache-2",
+  "files": {
+    "/Users/shunyaojin/Library/Mobile Documents/com~apple~CloudDocs/DAHacks3.5/scholartrust-demo/contracts/ScholarshipPool.sol": {
+      "lastModificationDate": 1748634098590,
+      "contentHash": "011f778f21564806d9587bae0b772f71",
+      "sourceName": "contracts/ScholarshipPool.sol",
+      "solcConfig": {
+        "version": "0.8.28",
+        "settings": {
+          "evmVersion": "paris",
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.17"
+      ],
+      "artifacts": [
+        "ScholarshipPool"
+      ]
+    }
+  }
+}
