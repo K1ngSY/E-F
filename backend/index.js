@@ -7,9 +7,9 @@ const fs = require("fs");
 const path = require("path");
 const { JsonRpcProvider, Wallet, Contract, parseEther } = require("ethers");
 const { addFile } = require("./ipfs");
-const db = require("./db");  // ← 新增：数据库连接
+const db = require("./db");  // ← New：database connection
 
-// 根据你的项目结构调整此路径
+// Path
 const artifact = require("../scholartrust-demo/artifacts/contracts/ScholarshipPool.sol/ScholarshipPool.json");
 const abi = artifact.abi;
 
